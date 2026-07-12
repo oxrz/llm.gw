@@ -13,7 +13,7 @@ import (
 	"os"
 	"time"
 
-	"llamad/internal"
+	"llama.gw/internal"
 )
 
 var httpClient = &http.Client{Timeout: 5 * time.Second}
@@ -145,6 +145,6 @@ func main() {
 		revProxy.ServeHTTP(w, r)
 	}))
 
-	log.Printf("🦙 llamap %s → %s (async switch, CORS)", internal.ProxyPort, internal.BackendPort)
+	log.Printf("🦙 llama.gw proxy %s → %s (async switch, CORS)", internal.ProxyPort, internal.BackendPort)
 	log.Fatal(http.ListenAndServe(internal.ProxyPort, nil))
 }

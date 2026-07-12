@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"llamad/internal"
+	"llama.gw/internal"
 )
 
 var httpClient = &http.Client{Timeout: 5 * time.Second}
@@ -280,6 +280,6 @@ func main() {
 	mux.HandleFunc("/status", d.handleStatus)
 	mux.HandleFunc("/switch", d.handleSwitch)
 
-	log.Printf("🦙 llamad on %s, backend %s", internal.DaemonPort, internal.BackendPort)
+	log.Printf("🦙 llama.gw daemon on %s, backend %s", internal.DaemonPort, internal.BackendPort)
 	log.Fatal(http.ListenAndServe(internal.DaemonPort, mux))
 }
