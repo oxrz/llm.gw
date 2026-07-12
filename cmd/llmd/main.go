@@ -49,8 +49,11 @@ func (d *Daemon) isBackendReady() bool {
 	return resp.StatusCode == http.StatusOK
 }
 
+// killBackend kills only the llama-server on the daemon's configured backend port.
 func (d *Daemon) killBackend() {
-	exec.Command("pkill", "llama-server").Run()
+	port := strings.TrimPrefix(internal.BackendPort, ":")
+	pattern := fmt.Sprintf("llama-server.*--port %s", port)
+	exec.Command("pkill", "-f", pattern).Run()
 	for i := 0; i < 60; i++ {
 		if !d.isBackendAlive() {
 			return
@@ -58,7 +61,7 @@ func (d *Daemon) killBackend() {
 		time.Sleep(500 * time.Millisecond)
 	}
 	log.Printf("backend alive after SIGTERM, sending SIGKILL")
-	exec.Command("pkill", "-9", "llama-server").Run()
+	exec.Command("pkill", "-9", "-f", pattern).Run()
 	for i := 0; i < 10; i++ {
 		if !d.isBackendAlive() {
 			return
@@ -242,10 +245,6 @@ func (d *Daemon) handleSwitch(w http.ResponseWriter, r *http.Request) {
 func main() {
 	configPath := flag.String("config", os.Getenv("LLAMAD_CONFIG"), "path to models config")
 	flag.Parse()
-	if *configPath == "" {
-		*configPath = ".models.json"
-	}
-
 	if err := internal.LoadModels(*configPath); err != nil {
 		log.Fatalf("failed to load models: %v", err)
 	}

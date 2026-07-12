@@ -101,10 +101,6 @@ func main() {
 	// load models from .models.json
 	configPath := flag.String("config", os.Getenv("LLAMAD_CONFIG"), "path to models config")
 	flag.Parse()
-	if *configPath == "" {
-		*configPath = ".models.json"
-	}
-
 	if err := internal.LoadModels(*configPath); err != nil {
 		log.Fatalf("failed to load models: %v", err)
 	}
