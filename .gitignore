@@ -1,0 +1,5 @@
+/bin/
+*.gguf
+*.exe
+.models.*
+.DS_Store
