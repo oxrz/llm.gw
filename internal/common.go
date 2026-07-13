@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -116,15 +118,68 @@ func EnsureModelReady(alias string, timeout time.Duration) bool {
 
 // ── HTTP handlers ────────────────────────────────────────────────────
 
+// BackendModelMeta holds metadata from the running llama-server.
+type BackendModelMeta map[string]interface{}
+
+// FetchBackendModelMeta fetches /v1/models from the backend and returns
+// the metadata for the currently loaded model, or nil on error.
+func FetchBackendModelMeta() BackendModelMeta {
+	resp, err := HTTPClient.Get(BackendURL("/v1/models"))
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+	var data struct {
+		Data []struct {
+			Meta BackendModelMeta `json:"meta"`
+		} `json:"data"`
+	}
+	if json.NewDecoder(resp.Body).Decode(&data) != nil || len(data.Data) == 0 {
+		return nil
+	}
+	meta := data.Data[0].Meta
+	if meta != nil {
+		// Fix: override n_ctx_train to match n_ctx (avoid context length mismatch).
+		if nctx, ok := meta["n_ctx"]; ok {
+			meta["n_ctx_train"] = nctx
+		}
+	}
+	return meta
+}
+
+// parseCtxSize extracts the context size from a model command string
+// by looking for the -c/--ctx-size flag. Returns 0 if not found.
+func parseCtxSize(cmd string) int {
+	re := regexp.MustCompile(`(?:-c|--ctx-size)\s+(\d+)`)
+	m := re.FindStringSubmatch(cmd)
+	if m == nil {
+		return 0
+	}
+	n, _ := strconv.Atoi(m[1])
+	return n
+}
+
 // WriteModelsList writes an OpenAI-compatible /v1/models response.
-func WriteModelsList(w http.ResponseWriter) {
-	var models []map[string]string
+// If backendMeta is non-nil, it is attached to the currently loaded model.
+// For other models, context size is parsed from the model command.
+func WriteModelsList(w http.ResponseWriter, backendMeta BackendModelMeta) {
+	current := GetCurrentModel()
+	var models []map[string]interface{}
 	for name := range ModelCommands {
-		models = append(models, map[string]string{
+		m := map[string]interface{}{
 			"id":       name,
 			"object":   "model",
 			"owned_by": "local",
-		})
+		}
+		if backendMeta != nil && name == current {
+			m["meta"] = backendMeta
+		} else if nctx := parseCtxSize(ModelCommands[name]); nctx > 0 {
+			m["meta"] = BackendModelMeta{
+				"n_ctx":       nctx,
+				"n_ctx_train": nctx,
+			}
+		}
+		models = append(models, m)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"object": "list", "data": models})

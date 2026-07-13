@@ -23,7 +23,11 @@ func main() {
 	revProxy := httputil.NewSingleHostReverseProxy(backendURL)
 
 	http.HandleFunc("/v1/models", internal.CORS(func(w http.ResponseWriter, r *http.Request) {
-		internal.WriteModelsList(w)
+		// Fetch real metadata from backend for the currently loaded model,
+		// then return all models from .models.json — merging backend
+		// metadata where available (n_ctx_train = n_ctx fix).
+		backendMeta := internal.FetchBackendModelMeta()
+		internal.WriteModelsList(w, backendMeta)
 	}))
 
 	http.HandleFunc("/", internal.CORS(func(w http.ResponseWriter, r *http.Request) {
