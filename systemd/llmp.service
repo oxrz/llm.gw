@@ -1,12 +1,12 @@
 [Unit]
-Description=llamap - thin reverse proxy
+Description=llm.gw proxy - thin reverse proxy
 After=llmd.service
 Requires=llmd.service
 
 [Service]
 Type=simple
-ExecStart=%h/ai/llamad/bin/llmp
-WorkingDirectory=%h/ai/llamad
+ExecStart=%h/ai/llm.gw/bin/llmp
+WorkingDirectory=%h/ai/llm.gw
 Restart=always
 RestartSec=3
 Environment=PATH=/usr/local/bin:/usr/bin:/bin

@@ -150,7 +150,7 @@ func FetchBackendModelMeta() BackendModelMeta {
 // parseCtxSize extracts the context size from a model command string
 // by looking for the -c/--ctx-size flag. Returns 0 if not found.
 func parseCtxSize(cmd string) int {
-	re := regexp.MustCompile(`(?:-c|--ctx-size)\s+(\d+)`)
+	re := regexp.MustCompile(`-c\s+(\d+)\s+-`)
 	m := re.FindStringSubmatch(cmd)
 	if m == nil {
 		return 0

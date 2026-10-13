@@ -11,11 +11,11 @@ import (
 	"net/url"
 	"os"
 
-	"llama.gw/internal"
+	"llm.gw/internal"
 )
 
 func main() {
-	configPath := flag.String("config", os.Getenv("LLAMAD_CONFIG"), "path to models config")
+	configPath := flag.String("config", os.Getenv("LLMGW_CONFIG"), "path to models config")
 	flag.Parse()
 	internal.MustLoadConfig(*configPath)
 
@@ -50,6 +50,6 @@ func main() {
 		revProxy.ServeHTTP(w, r)
 	}))
 
-	log.Printf("🦙 llama.gw proxy %s → %s (async switch, CORS)", internal.ProxyPort, internal.BackendPort)
+	log.Printf("🦙 llm.gw proxy %s → %s (async switch, CORS)", internal.ProxyPort, internal.BackendPort)
 	log.Fatal(http.ListenAndServe(internal.ProxyPort, nil))
 }

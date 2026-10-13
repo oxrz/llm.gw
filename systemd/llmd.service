@@ -1,12 +1,12 @@
 [Unit]
-Description=llamad - llama.cpp lifecycle daemon
+Description=llm.gw daemon - llama.cpp lifecycle daemon
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=%h/ai/llamad/bin/llmd
-WorkingDirectory=%h/ai/llamad
+ExecStart=%h/ai/llm.gw/bin/llmd
+WorkingDirectory=%h/ai/llm.gw
 Restart=always
 RestartSec=5
 Environment=PATH=/usr/local/bin:/usr/bin:/bin

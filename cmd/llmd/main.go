@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"llama.gw/internal"
+	"llm.gw/internal"
 )
 
 type Daemon struct {
@@ -241,7 +241,7 @@ func (d *Daemon) handleSwitch(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	configPath := flag.String("config", os.Getenv("LLAMAD_CONFIG"), "path to models config")
+	configPath := flag.String("config", os.Getenv("LLMGW_CONFIG"), "path to models config")
 	flag.Parse()
 	internal.MustLoadConfig(*configPath)
 
@@ -274,6 +274,6 @@ func main() {
 	mux.HandleFunc("/status", d.handleStatus)
 	mux.HandleFunc("/switch", d.handleSwitch)
 
-	log.Printf("🦙 llama.gw daemon on %s, backend %s", internal.DaemonPort, internal.BackendPort)
+	log.Printf("🦙 llm.gw daemon on %s, backend %s", internal.DaemonPort, internal.BackendPort)
 	log.Fatal(http.ListenAndServe(internal.DaemonPort, mux))
 }
