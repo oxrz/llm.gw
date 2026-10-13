@@ -14,10 +14,8 @@ import (
 	"syscall"
 	"time"
 
-	"llama.gw/internal"
+	"llm.gw/internal"
 )
-
-var httpClient = &http.Client{Timeout: 5 * time.Second}
 
 type Daemon struct {
 	mu           sync.Mutex
@@ -28,7 +26,7 @@ type Daemon struct {
 }
 
 func (d *Daemon) isBackendAlive() bool {
-	resp, err := httpClient.Get(internal.HealthURL)
+	resp, err := internal.HTTPClient.Get(internal.HealthURL)
 	if err != nil {
 		return false
 	}
@@ -37,8 +35,8 @@ func (d *Daemon) isBackendAlive() bool {
 }
 
 func (d *Daemon) isBackendReady() bool {
-	resp, err := httpClient.Post(
-		fmt.Sprintf("http://127.0.0.1%s/v1/chat/completions", internal.BackendPort),
+	resp, err := internal.HTTPClient.Post(
+		internal.BackendURL("/v1/chat/completions"),
 		"application/json",
 		strings.NewReader(`{"messages":[{"role":"user","content":"x"}],"max_tokens":1}`),
 	)
@@ -243,12 +241,9 @@ func (d *Daemon) handleSwitch(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	configPath := flag.String("config", os.Getenv("LLAMAD_CONFIG"), "path to models config")
+	configPath := flag.String("config", os.Getenv("LLMGW_CONFIG"), "path to models config")
 	flag.Parse()
-	if err := internal.LoadModels(*configPath); err != nil {
-		log.Fatalf("failed to load models: %v", err)
-	}
-	log.Printf("📋 loaded %d model(s), default: %s", len(internal.ModelCommands), internal.DefaultModel)
+	internal.MustLoadConfig(*configPath)
 
 	d := &Daemon{startTime: time.Now()}
 
@@ -279,6 +274,6 @@ func main() {
 	mux.HandleFunc("/status", d.handleStatus)
 	mux.HandleFunc("/switch", d.handleSwitch)
 
-	log.Printf("🦙 llama.gw daemon on %s, backend %s", internal.DaemonPort, internal.BackendPort)
+	log.Printf("🦙 llm.gw daemon on %s, backend %s", internal.DaemonPort, internal.BackendPort)
 	log.Fatal(http.ListenAndServe(internal.DaemonPort, mux))
 }

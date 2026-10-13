@@ -1,4 +1,4 @@
-# llama.gw
+# llm.gw
 
 llama.cpp inference gateway (daemon + proxy). Manages llama-server lifecycle with automatic model switching, health monitoring, and graceful restart.
 
@@ -34,7 +34,7 @@ llama.cpp inference gateway (daemon + proxy). Manages llama-server lifecycle wit
 
 ```bash
 # build
-cd llama.gw
+cd llm.gw
 go build -o bin/llmd ./cmd/llmd
 go build -o bin/llmp  ./cmd/llmp
 
@@ -48,17 +48,17 @@ systemctl --user enable --now llmp
 
 ### Proxy: llmp (:9999)
 
-| Method | Path                     | Description                                           |
-| ------ | ------------------------ | ----------------------------------------------------- |
+| Method | Path                     | Description                                         |
+| ------ | ------------------------ | --------------------------------------------------- |
 | GET    | `/v1/models`           | List available models                                 |
 | POST   | `/v1/chat/completions` | OpenAI-compatible chat (model switching is automatic) |
 
 ### Daemon: llmd (:9898)
 
-| Method | Path        | Description                           |
-| ------ | ----------- | ------------------------------------- |
+| Method | Path      | Description                           |
+| ------ | ----------| ------------------------------------- |
 | GET    | `/status` | Current model, backend health, uptime |
-| POST   | `/switch` | Switch model:`{"model":"gemma26"}`  |
+| POST   | `/switch` | Switch model:`{"model":"gemma26"}`    |
 
 ## Models (Samples)
 
@@ -87,7 +87,7 @@ Two units, independent lifecycle:
 ## Project Structure
 
 ```
-llama.gw/
+llm.gw/
 ├── cmd/
 │   ├── llmd/main.go      # llmd: :9898
 │   └── llmp/main.go      # llmp: :9999
